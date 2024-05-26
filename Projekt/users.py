@@ -1,3 +1,4 @@
+import sys
 from typing import List, Collection
 import structures as s
 import csv
@@ -105,14 +106,14 @@ class Calendar:
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 if any(row):
-                    v_date, v_service_info, v_client_login, v_done, v_payed, v_contractor_id = map(parse_value, row)
-                    self.visits.append(s.Visit(v_date, v_service_info, v_client_login, v_done, v_payed, v_contractor_id))   
+                    v_date, v_service_info, v_client_login, v_done, v_payed, v_contractor_login = map(parse_value, row)
+                    self.visits.append(s.Visit(v_date, v_service_info, v_client_login, v_done, v_payed, v_contractor_login))
 
     def show_calendar(self):
         return self.visits
 
     def add_visit(self, visit: s.Visit):
-        data = list(map(str,[visit.date, visit.service_info, visit.client_login, visit.status, visit.payed, visit.contractor_id]))
+        data = list(map(str,[visit.date, visit.service_info, visit.client_login, visit.status, visit.payed, visit.contractor_login]))
         print(data)
         with open('./visits.csv', mode='a', newline='') as file:
             writer = csv.writer(file)
@@ -125,15 +126,55 @@ class Offer:
             reader = csv.reader(csvfile, delimiter=',')
             for row in reader:
                 if any(row):
-                    o_description, o_price, o_contractor_id = map(parse_value, row)
-                    self.services.append(s.Service(o_description, o_price, o_contractor_id))
+                    o_description, o_price, o_contractor_login = map(parse_value, row)
+                    self.services.append(s.Service(o_description, o_price, o_contractor_login))
 
     def show_offer(self):
         return self.services
-    
-    def change_offer(self, id):
-        #TODO
-        pass
+
+    def edit_offer(self,admin_login):
+        while (True):
+            edit_service_id = int(input("Podaj numer usługi do edycji: ").strip())
+            print("Podaj nowe dane wybranej usługi")
+            service_description = input("Opis usługi: ").strip()
+            service_price = int(input("Cena usługi: ").strip())
+            service = s.Service(service_description, service_price, admin_login)
+
+            with open('./services.csv', 'r', newline='', encoding='utf-8') as csvfile:
+                rows = list(csv.reader(csvfile))
+
+            if 0 <= edit_service_id < len(rows):
+                rows[edit_service_id-1] = [service.description, service.price, service.contractor_login]
+
+                with open('./services.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(rows)
+                    break
+            else:
+                print("-------------------------")
+                print("Nieprawidłowy numer usługi.")
+
+    def add_service(self, service: s.Service):
+        with open('./services.csv',mode = 'a', newline='', encoding='utf-8') as csvfile:
+            writer = csv.writer(csvfile, delimiter=',')
+            writer.writerow([service.description,service.price,service.contractor_login])
+
+    def delete_service(self):
+        while True:
+            delete_service_id = int(input("Podaj numer usługi usunięcia: ").strip())
+            with open('./services.csv', 'r', newline='', encoding='utf-8') as csvfile:
+                rows = list(csv.reader(csvfile))
+
+            if 1 <= delete_service_id <= len(rows):
+                del rows[delete_service_id - 1]
+
+                with open('./services.csv', 'w', newline='', encoding='utf-8') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerows(rows)
+                    break
+            else:
+                print("-------------------------")
+                print("Nieprawidłowy numer usługi.")
 
 class User:
     def register(self):
@@ -142,46 +183,131 @@ class User:
     def login(self):
         pass
 
-    def check_offer() -> s.Visit:
+    def check_offer(self) -> s.Visit:
         pass
 
-    def check_callendar() -> str:
+    def check_callendar(self) -> str:
         pass
 
 class Administrator(User):
-    def __init__(self, login: str, password: str, permissions: str, id: int, visits: Collection[s.Visit]):
-        super().__init__(login, password, permissions)
-        self.id = id
-        self.visits = visits
+    def __init__(self):
+        self.login = ''
+        self.password = ''
+        self.permissions = 'Admin'
+        self.visits = []
 
     def register(self):
-        pass
+        register_process = True
+        while (register_process):
+            login = input("Podaj login: ").strip()
+            password1 = input("Podaj haslo: ").strip()
+            password2 = input("Powtorz haslo: ").strip()
+            if password1 == password2:
+                is_login_taken = check_user_in_database(login, password1, "register", "Admin")
+                if (not is_login_taken):
+                    register_process = False
+                else:
+                    print("-------------------------")
+                    print("Nazwa uzytkownika zajeta! Sprobuj ponownie")
+                    print("-------------------------")
+            else:
+                print("-------------------------")
+                print("Hasla musza byc identyczne! Sprobuj ponownie")
+                print("-------------------------")
+
+        data = [{'Login': login, 'Password': password1, 'Permissions': 'Admin'}]
+
+        with open('logins.csv', mode='a', newline='', encoding='utf-8') as file:
+            fieldnames = ['Login', 'Password', 'Permissions']
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writerows(data)
+        print("-------------------------")
+        print("Zarejestrowano konto")
 
     def log_in(self):
-        pass
+        login_data_correct = False
+        while (not login_data_correct):
+            login = input("Podaj login: ").strip()
+            password = input("Podaj haslo: ").strip()
+            login_data_correct = check_user_in_database(login, password, "login", "Admin")
+            print("-------------------------")
+
+            if not login_data_correct:
+                print("Niepoprawny login lub haslo")
+                print("[1] Sprobuj ponownie")
+                print("[0] Wyjdz")
+                try_again = int(input("Wybor: ").strip())
+
+                match try_again:
+                    case 1:
+                        pass
+                    case 0:
+                        sys.exit()
+                    case _:
+                        print("Nieprawidłowy wybór. Spróbuj ponownie.")
+            else:
+                self.login = login
+                self.password = password
+
+        print("Zalogowano pomyslnie")
 
 
-    def add_service(self, service: s.Service):
+    def add_service(self):
         # Dodaje do pliku services.csv usluge
         # new_service = s.Service
-        pass
+        service_description = input("Nazwa usługi: ").strip()
+        service_price = int(input("Cena: ").strip())
+        service_contractor = self.login
+        service = s.Service(service_description, service_price, service_contractor)
+        offer = Offer()
+        offer.add_service(service)
+        print("-------------------------")
+        print("Pomyślnie dodano nową usługę")
+
 
     def edit_service(self):
-        Offer().change_offer()
-        pass
+        offer = Offer().show_offer()
+        print("-------------------------")
+        print("Lista dostępnych ofert: ")
+        for i, service in enumerate(offer):
+            print(f"[{i + 1}] {service.description} -- koszt {service.price}pln")
+        offer = Offer()
+        offer.edit_offer(self.login)
+        print("-------------------------")
+        print("Zaktualizowano listę usług")
 
-    def delete_service(self, service: s.Service):
-        # Implement deleting service logic
-        pass
+    def delete_service(self):
+        offer = Offer().show_offer()
+        print("-------------------------")
+        print("Lista dostępnych ofert: ")
+        for i, service in enumerate(offer):
+            print(f"[{i + 1}] {service.description} -- koszt {service.price}pln")
+        offer = Offer()
+        offer.delete_service()
+        print("-------------------------")
+        print("Pomyślnie usunięto serwis z oferty")
 
-    def show_offer(self) -> Offer:
-        # Implement showing offer logic
-        pass
+    def check_offer(self):
+        offer = Offer().show_offer()
 
-    def check_calendar(self) -> str:
-        # Implement checking calendar logic
-        pass
+        print("-------------------------")
+        print("Lista dostepnych ofert")
+        for i, service in enumerate(offer):
+            print(f"[{i + 1}] {service.description} -- koszt {service.price}pln")
 
+    def check_calendar(self):
+        print("-------------------------")
+        print("Lista niedokonanych wizyt:")
+
+        with open('visits.csv', mode='r', newline='', encoding='utf-8') as file:
+            counter = 0
+            reader = csv.DictReader(file)
+            for row in reader:
+                if row['Stan'] == 'niedokonana' and row['Login pracownika'] == self.login:
+                    counter+=1
+                    print(f"Wizyta: {row['Data']} - Usługa: {row['Usluga']}, Klient: {row['Login klienta']}, Status: {row['Stan']}")
+            if counter == 0:
+                print("Brak wizyt w kalendarzu")
 class Client(User):
     def __init__(self):
         self.login = ""
@@ -196,7 +322,7 @@ class Client(User):
             password1 = input("Podaj haslo: ").strip()
             password2 = input("Powtorz haslo: ").strip()
             if password1 == password2:
-                is_login_taken = check_user_in_database(login, password1, "register")
+                is_login_taken = check_user_in_database(login, password1, "register","Client")
                 if(not is_login_taken):
                     register_process = False
                 else:
@@ -221,7 +347,7 @@ class Client(User):
 
     def log_in(self):
         login_data_correct = False
-        while(not login_data_correct):
+        while not login_data_correct:
             login = input("Podaj login: ").strip()
             password = input("Podaj haslo: ").strip()
             login_data_correct = check_user_in_database(login, password, "login", "Client")
@@ -237,7 +363,7 @@ class Client(User):
                     case 1:
                         pass
                     case 0:
-                        #TODO obsluzyc bo jest luka
+                        sys.exit()
                         return
                     case _:
                         print("Nieprawidłowy wybór. Spróbuj ponownie.")
@@ -255,13 +381,10 @@ class Client(User):
         print("Wybierz termin")
         ordered_date = date_select()
 
-        # TODO
-        # Client dokonuje platnosci
-        # ordered_payed = self.pay()
-        ordered_payed = True
+        ordered_payed = self.pay()
 
 
-        new_visit = s.Visit(ordered_date, ordered_service.description, self.login, "niedokonana", ordered_payed,  ordered_service.contractor_id)
+        new_visit = s.Visit(ordered_date, ordered_service.description, self.login, "niedokonana", ordered_payed,  ordered_service.contractor_login)
 
         self.book_visit(new_visit)
 
@@ -309,19 +432,6 @@ class Client(User):
             print(f"[{i+1}] {visit.service_info} data: {visit.date} status: {visit.status}")
 
     def pay(self) -> bool:
-        #TODO
-    
-        # To wszystko nizej bedzie w Payment klasie w pliku structures
-
-        # To wszystko w while(True)
-        # Wybierz sposob platnosci: karta/gotowka
-        # Jesli gotowka - return false
-        # JEsli karta - 
-        # zmienna = input("[Y] zeby zaplacic").strip()
-        # sprawdzasz czy zmienna jest 'Y'
-        # jak tak to return True
-        # jak nie - print("Sprobuj ponownie")
-
         return s.Payment().process_payment()
 
 
