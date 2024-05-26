@@ -5,11 +5,6 @@ class Service:
         self.contractor_login = contributor_login
 
 
-class Car:
-    def __init__(self, license_plate_number: str):
-        self.license_plate_number = license_plate_number
-
-
 class Payment:
 
     def process_payment(self) -> bool:

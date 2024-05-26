@@ -1,5 +1,4 @@
 import sys
-from typing import List, Collection
 import structures as s
 import csv
 
@@ -133,7 +132,7 @@ class Offer:
         return self.services
 
     def edit_offer(self,admin_login):
-        while (True):
+        while True:
             edit_service_id = int(input("Podaj numer usługi do edycji: ").strip())
             print("Podaj nowe dane wybranej usługi")
             service_description = input("Opis usługi: ").strip()
@@ -253,8 +252,6 @@ class Administrator(User):
 
 
     def add_service(self):
-        # Dodaje do pliku services.csv usluge
-        # new_service = s.Service
         service_description = input("Nazwa usługi: ").strip()
         service_price = int(input("Cena: ").strip())
         service_contractor = self.login
@@ -266,22 +263,14 @@ class Administrator(User):
 
 
     def edit_service(self):
-        offer = Offer().show_offer()
-        print("-------------------------")
-        print("Lista dostępnych ofert: ")
-        for i, service in enumerate(offer):
-            print(f"[{i + 1}] {service.description} -- koszt {service.price}pln")
+        self.check_offer()
         offer = Offer()
         offer.edit_offer(self.login)
         print("-------------------------")
         print("Zaktualizowano listę usług")
 
     def delete_service(self):
-        offer = Offer().show_offer()
-        print("-------------------------")
-        print("Lista dostępnych ofert: ")
-        for i, service in enumerate(offer):
-            print(f"[{i + 1}] {service.description} -- koszt {service.price}pln")
+        self.check_offer()
         offer = Offer()
         offer.delete_service()
         print("-------------------------")
