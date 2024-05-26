@@ -108,3 +108,4 @@ def welcome_panel():
                 print("Nieprawidłowy wybór. Spróbuj ponownie.")
 
 welcome_panel()
+print("Test Commit")
