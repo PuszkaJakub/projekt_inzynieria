@@ -1,3 +1,6 @@
-12.04.2024,Powloka ceramiczna,test,wykonana,True,1
-25.02.2024,Mycie spa,test,niedokonana,True,1
-30.04.2024,Powloka ceramiczna,test,niedokonana,True,1
+Data,Usluga,Login klienta,Stan,Oplacono,Login pracownika
+12.04.2024,Powloka ceramiczna,test,wykonana,True,AdminTest
+25.02.2024,Mycie spa,test,niedokonana,True,AdminTest
+30.04.2024,Powloka ceramiczna,test,niedokonana,True,AdminTest
+01.01.2024,Detailing wnetrza,test,niedokonana,True,AdminTest
+06.02.2024,Renowacja foteli,test,niedokonana,False,AdminTest

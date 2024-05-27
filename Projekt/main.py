@@ -1,3 +1,5 @@
+import sys
+
 from users import Client, Administrator
 
 
@@ -46,12 +48,14 @@ def admin_session(user):
         user_choice = input("Wybor: ").strip()
         match user_choice:
             case '1':
-                user.edit_services()
+                user.edit_service()
             case '2':
                 user.add_service()
             case '3':
-                user.check_offer(False)
+                user.delete_service()
             case '4':
+                user.check_offer()
+            case '5':
                 user.check_calendar()
             case '0':
                 break
@@ -78,7 +82,7 @@ def login_panel(user):
             case '2':
                 user.register()
             case '0':
-                break
+                sys.exit()
             case _:
                 print("Nieprawidłowy wybór. Spróbuj ponownie.")
           
@@ -108,3 +112,4 @@ def welcome_panel():
                 print("Nieprawidłowy wybór. Spróbuj ponownie.")
 
 welcome_panel()
+
