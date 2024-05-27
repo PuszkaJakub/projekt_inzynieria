@@ -26,7 +26,7 @@ class Offer:
             with open('./services.csv', 'r', newline='', encoding='utf-8') as csvfile:
                 rows = list(csv.reader(csvfile))
 
-            if 0 <= edit_service_id < len(rows):
+            if 0 < edit_service_id <= len(rows):
                 rows[edit_service_id-1] = [service.description, service.price, service.contractor_login]
 
                 with open('./services.csv', 'w', newline='', encoding='utf-8') as csvfile:
