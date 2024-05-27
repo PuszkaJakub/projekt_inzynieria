@@ -19,7 +19,6 @@ class Payment:
                 return False
 
 
-
 class Visit:
     def __init__(self, date: str, service_info: str, client_login: str, status: str, payed: bool, contractor_login: str):
         self.date = date

@@ -1,7 +1,6 @@
 import sys
-
-from users import Client, Administrator
-
+import client
+import administrator
 
 def client_session(user):
     while(True):
@@ -97,12 +96,12 @@ def welcome_panel():
         mode = input("Wybor: ").strip()
         match mode:
             case '1':
-                user = Client()
+                user = client.Client()
                 login_panel(user)
                 client_session(user)
                 break
             case '2':
-                user = Administrator()
+                user = administrator.Administrator()
                 login_panel(user)
                 admin_session(user)
                 break
